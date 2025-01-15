@@ -1,9 +1,24 @@
-import { init } from "@instantdb/react";
+import { i, init } from "@instantdb/react";
+import { KeyboardEvent } from "react";
 
-const db = init({ appId: "2b22f98c-404b-496a-a54b-9da410b7931e" });
+const schema = i.schema({
+  entities: {},
+  rooms: {
+    chat: {
+      presence: i.entity({
+        name: i.string(),
+      }),
+      topics: {}
+    }
+  }
+});
+
+const db = init({ appId: "2b22f98c-404b-496a-a54b-9da410b7931e", schema });
 
 const randomId = Math.random().toString(36).slice(2, 6);
-const user = {
+
+type Presence = { name: string };
+const user: Presence = {
   name: `User#${randomId}`,
 };
 
@@ -16,14 +31,14 @@ export default function InstantTypingIndicator() {
   // 2. Use the typing indicator hook
   const typing = room.useTypingIndicator("chat");
 
-  const onKeyDown = (e: any) => {
+  const onKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     // 3. Render typing indicator
     typing.inputProps.onKeyDown(e);
 
     // 4. Optionally run your own onKeyDown logic
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      console.log("Message sent:", e.target.value);
+      console.log("Message sent:", e.currentTarget.value);
     }
   };
 
@@ -44,7 +59,7 @@ export default function InstantTypingIndicator() {
   );
 }
 
-function typingInfo(users: any[]) {
+function typingInfo(users: Presence[]) {
   if (users.length === 0) return null;
   if (users.length === 1) return `${users[0].name} is typing...`;
   if (users.length === 2)
